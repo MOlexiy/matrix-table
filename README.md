@@ -2,6 +2,9 @@
 
 This project is a single-page web application built with React and TypeScript. The core of the application is an interactive data table that generates and manipulates a matrix of M rows and N columns. The application demonstrates core frontend skills, including state management with React Context, dynamic rendering, and user interaction.
 
+## Deployment
+The application is deployed and can be accessed at: https://matrix-table-woad.vercel.app
+
 ## Features
 - **Dynamic Table Generation**: Users can specify the number of rows (M) and columns (N) to generate a matrix.
 - **Cell Interaction**: Clicking on a cell increments its value by 1.
