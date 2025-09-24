@@ -16,11 +16,11 @@ This project is a single-page web application built with React and TypeScript. T
 - **Error Handling**: Basic error handling for user inputs to ensure valid matrix dimensions.
 
 ## Getting Started
-- ### Prerequisites
+### Prerequisites
 - Node.js (version 14 or higher)
 - npm (version 6 or higher)
 ## Installation
-- ### Clone the repository:
+### Clone the repository:
 - git clone
 ### Navigate to the project directory:
 - cd [repository-name]
