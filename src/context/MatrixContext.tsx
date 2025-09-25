@@ -13,7 +13,7 @@ export interface MatrixContextType {
   addRow: () => void;
   removeRow: (rowId: number) => void;
   updateCellValue: (rowId: number, cellId: number, value: number) => void;
-  highlightCells: (hoveredAmount: number) => void;
+  highlightCells: (hoveredCellValue: number) => void;
   clearHighlights: () => void;
   get60thPercentile: (columnIndex: number) => number;
   setHoveredRowId: (rowId: number | null) => void;
@@ -119,25 +119,32 @@ export const MatrixProvider = ({
   );
 
   const highlightCells = useCallback(
-    (hoveredAmount: number) => {
-      const distance = matrix.map((row) => ({
-        rowId: row.rowId,
-        distance: Math.abs(row.amount - hoveredAmount),
+    (hoveredCellValue: number) => {
+      const allCells = matrix.flatMap((row) =>
+        row.cells.map((cell) => ({ ...cell, rowId: row.rowId }))
+      );
+      const distances = allCells.map((cell) => ({
+        cellId: cell.cellId,
+        rowId: cell.rowId,
+        distance: Math.abs(cell.cellValue - hoveredCellValue),
       }));
-      distance.sort((a, b) => a.distance - b.distance);
+      distances.sort((a, b) => a.distance - b.distance);
+      const nearestXCells = distances.slice(0, highlightedCount);
+      const nearestXCellIds = nearestXCells.map(cell => ({
+        rowId: cell.rowId,
+        cellId: cell.cellId
+      }));
 
-      const nearestRowId = distance
-        .slice(1, highlightedCount + 1)
-        .map((d) => d.rowId);
-
-      setMatrix((prev) =>
-        prev.map((row) => ({
+      setMatrix((prevMatrix) =>
+        prevMatrix.map((row) => ({
           ...row,
-          cells: row.cells.map((cell) => ({
-            ...cell,
-            isHighlighted: nearestRowId.includes(row.rowId),
-          })),
-        })),
+          cells: row.cells.map((cell) => {
+            const shouldHighlight = nearestXCellIds.some(
+              (nearest) => nearest.rowId === row.rowId && nearest.cellId === cell.cellId
+            );
+            return { ...cell, isHighlighted: shouldHighlight };
+          }),
+        }))
       );
     },
     [highlightedCount, matrix],
@@ -158,9 +165,7 @@ export const MatrixProvider = ({
   const get60thPercentile = useCallback(
     (columnIndex: number) => {
       if (matrix.length === 0) return 0;
-      const columnValues = matrix.map(
-        (row) => row.cells[columnIndex].cellValue,
-      );
+      const columnValues = matrix.map((row) => row.cells[columnIndex].cellValue);
       return getPercentile(columnValues, 60);
     },
     [matrix],

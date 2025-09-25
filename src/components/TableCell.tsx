@@ -12,42 +12,51 @@ interface CellProps {
 const TableCell: React.FC<CellProps> = ({ rowId, cell, amount, isSumCell }) => {
   const {
     updateCellValue,
-    setHoveredRowId,
-    hoveredRowId,
     highlightCells,
     clearHighlights,
+    setHoveredRowId,
+    hoveredRowId,
+    matrix,
   } = useMatrix();
 
   const handleCellClick = () => {
     updateCellValue(rowId, cell.cellId, cell.cellValue + 1);
+    highlightCells(cell.cellValue);
   };
 
   const handleMouseEnter = () => {
-    setHoveredRowId(rowId);
-    highlightCells(amount);
+    if (isSumCell) setHoveredRowId(rowId);
+    else highlightCells(cell.cellValue);
   };
 
   const handleMouseLeave = () => {
-    setHoveredRowId(null);
-    clearHighlights();
+    if (isSumCell) setHoveredRowId(null);
+    else clearHighlights();
   };
 
   const percentage =
     amount > 0 ? ((cell.cellValue / amount) * 100).toFixed(2) : 0;
   const isCurrentRowHovered = hoveredRowId === rowId;
+  const hoveredRow = matrix.find((r) => r.rowId === hoveredRowId);
+  const maxCellValueInRow = hoveredRow
+    ? Math.max(...hoveredRow.cells.map((c) => c.cellValue))
+    : 0;
+  const heatmapPercentage =
+    maxCellValueInRow > 0 ? (cell.cellValue / maxCellValueInRow) * 100 : 0;
 
-  const cellClasses = `table-cell ${cell.isHighlighted ? "highlighted" : ""}`;
+  const cellClasses = `table-cell ${cell.isHighlighted ? "highlighted" : ""} ${isCurrentRowHovered ? "percentage-row" : ""}`;
   const cellStyle = {
     "--percentage": `${percentage}%`,
+    "--heatmap-percentage": `${heatmapPercentage}%`,
   } as React.CSSProperties;
 
   return (
     <td
       className={cellClasses}
       style={cellStyle}
-      onClick={!isSumCell ? handleCellClick : undefined}
-      onMouseEnter={isSumCell ? handleMouseEnter : undefined}
-      onMouseLeave={isSumCell ? handleMouseLeave : undefined}
+      onClick={isSumCell ? undefined : handleCellClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {isSumCell
         ? amount
